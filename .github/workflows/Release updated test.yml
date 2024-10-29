@@ -39,13 +39,13 @@ jobs:
             exit 1
           fi
 
-      - name: Build Frontend
+      - name: Build npm Packages
         run: npm run build
 
-      - name: Run Frontend Tests
+      - name: Run npm Tests
         run: |
           if ! npm test; then
-            echo "Frontend tests failed. Exiting..."
+            echo "npm tests failed. Exiting..."
             exit 1
           fi
 
@@ -115,5 +115,5 @@ jobs:
       - name: Deploy application
         run: npm run deploy
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       
