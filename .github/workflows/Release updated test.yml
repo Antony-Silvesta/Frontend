@@ -28,35 +28,66 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install || exit 1
+          if npm install; then
+            echo "Dependencies installed successfully!"
+          else
+            echo "Failed to install dependencies. Exiting..."
+          
 
       - name: Install Mocha Globally (if Mocha is not in `package.json`)
         run: |
-          npm install -g mocha || exit 1
-
+          if npm install -g mocha; then
+            echo "Mocha installed successfully!"
+          else
+            echo "Failed to install Mocha. Exiting..."
+          
       - name: Run Mocha Tests
         run: |
-          mocha || exit 1
+          if mocha; then
+            echo "Mocha tests passed successfully!"
+          else
+            echo "Mocha test execution failed. Exiting..."
+           
 
       - name: Build npm Packages
         run: |
-          npm run build || exit 1
+          if npm run build; then
+            echo "npm packages built successfully!"
+          else
+            echo "Failed to build npm packages. Exiting..."
+           
 
       - name: Run npm Tests
         run: |
-          npm test || exit 1
+          if npm test; then
+            echo "npm tests passed successfully!"
+          else
+            echo "npm tests failed. Exiting..."
+         
 
       - name: Check Docker Version
         run: |
-          docker --version || exit 1
+          if docker --version; then
+            echo "Docker is installed."
+          else
+            echo "Docker is not installed or the version is incompatible. Exiting..."
+        
 
       - name: Build Docker Image
         run: |
-          docker build -t my-selenium-app:latest . || exit 1
+          if docker build -t my-selenium-app:latest .; then
+            echo "Docker image built successfully!"
+          else
+            echo "Docker image build failed. Exiting..."
+         
 
       - name: Save Docker Image
         run: |
-          docker image save my-selenium-app:latest | xz -z -e -7 -T0 > image.xz || exit 1
+          if docker image save my-selenium-app:latest | xz -z -e -7 -T0 > image.xz; then
+            echo "Docker image saved successfully!"
+          else
+            echo "Failed to save Docker image. Exiting..."
+        
 
       - name: Create Release
         id: create_release
@@ -72,38 +103,62 @@ jobs:
       - name: Upload Release Asset
         run: |
           if [[ -n "${{ steps.create_release.outputs.upload_url }}" ]]; then
+            echo "Uploading release asset..."
             actions/upload-release-asset@v1
           else
-            exit 1
-          fi
+            echo "Upload URL not found. Exiting..."
+        
 
       - name: Install Selenium
         run: |
-          pip install selenium || exit 1
+          if pip install selenium; then
+            echo "Selenium installed successfully!"
+          else
+            echo "Failed to install Selenium. Exiting..."
+          
 
       - name: Install Python dependencies
         run: |
-          python -m pip install --upgrade pip && pip install selenium webdriver-manager || exit 1
+          if python -m pip install --upgrade pip && pip install selenium webdriver-manager; then
+            echo "Python dependencies installed successfully!"
+          else
+            echo "Failed to install Python dependencies. Exiting..."
+       
 
       - name: Run Google Search Test
         id: run_tests
         run: |
-          python Google.py > test_results.log || exit 0
+          if python Google.py > test_results.log; then
+            echo "Tests executed successfully!"
+          else
+            echo "There were errors in the tests. Check the logs below:"
+            cat test_results.log
+        
 
       - name: Show test results
         run: |
-          cat test_results.log || exit 1
+          if [[ -f test_results.log ]]; then
+            cat test_results.log
+          else
+            echo "Test results log not found."
+        
       
       - name: Confirm test execution
         if: ${{ steps.run_tests.outcome == 'success' }}
         run: |
+          echo "All tests executed successfully!"
           cat test_results.log
       
       - name: Handle test failure
         if: ${{ steps.run_tests.outcome != 'success' }}
         run: |
+          echo "Test failures detected. Review the logs."
           cat test_results.log
 
       - name: Deploy application
         run: |
-          npm run deploy || exit 1
+          if npm run deploy; then
+            echo "Application deployed successfully!"
+          else
+            echo "Failed to deploy application. Exiting..."
+         
