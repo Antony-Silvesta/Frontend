@@ -1,179 +1,32 @@
-name: CI/CD Pipeline
+name: Python application
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  workflow_dispatch:
-
-permissions:
-  contents: write
-  actions: read
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      chrome:
+        image: selenium/standalone-chrome
+        ports:
+          - 4444:4444
+        options: >-
+          --shm-size=2g
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'  # Adjust Python version as needed
 
-      - name: Install dependencies
-        run: |
-          if npm install; then
-            echo "Dependencies installed successfully!"
-          else
-            echo "Failed to install dependencies. Exiting..."
-            exit 1
-          fi
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install selenium
 
-      - name: Install Mocha Globally (if Mocha is not in `package.json`)
-        run: |
-          if npm install -g mocha; then
-            echo "Mocha installed successfully!"
-          else
-            echo "Failed to install Mocha. Exiting..."
-            exit 1
-          fi
-
-      - name: Run Mocha Tests
-        run: |
-          if mocha; then
-            echo "Mocha tests passed successfully!"
-          else
-            echo "Mocha test execution failed. Exiting..."
-            exit 1
-          fi
-
-      - name: Build npm Packages
-        run: |
-          if npm run build; then
-            echo "npm packages built successfully!"
-          else
-            echo "Failed to build npm packages. Exiting..."
-            exit 1
-          fi
-
-      - name: Run npm Tests
-        run: |
-          if npm test; then
-            echo "npm tests passed successfully!"
-          else
-            echo "npm tests failed. Exiting..."
-            exit 1
-          fi
-
-      - name: Check Docker Version
-        run: |
-          if docker --version; then
-            echo "Docker is installed."
-          else
-            echo "Docker is not installed or the version is incompatible. Exiting..."
-            exit 1
-          fi
-
-      - name: Build Docker Image
-        run: |
-          if docker build -t my-selenium-app:latest .; then
-            echo "Docker image built successfully!"
-          else
-            echo "Docker image build failed. Exiting..."
-            exit 1
-          fi
-
-      - name: Save Docker Image
-        run: |
-          if docker image save my-selenium-app:latest | xz -z -e -7 -T0 > image.xz; then
-            echo "Docker image saved successfully!"
-          else
-            echo "Failed to save Docker image. Exiting..."
-            exit 1
-          fi
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: v${{ github.run_id }}  # Use the run id as the version tag
-          release_name: Release ${{ github.run_id }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically available 
-
-      - name: Upload Release Asset
-        run: |
-          if [[ -n "${{ steps.create_release.outputs.upload_url }}" ]]; then
-            echo "Uploading release asset..."
-            actions/upload-release-asset@v1
-          else
-            echo "Upload URL not found. Exiting..."
-            exit 1
-          fi
-
-      - name: Install Selenium
-        run: |
-          if pip install selenium; then
-            echo "Selenium installed successfully!"
-          else
-            echo "Failed to install Selenium. Exiting..."
-            exit 1
-          fi
-
-      - name: Install Python dependencies
-        run: |
-          if python -m pip install --upgrade pip && pip install selenium webdriver-manager; then
-            echo "Python dependencies installed successfully!"
-          else
-            echo "Failed to install Python dependencies. Exiting..."
-            exit 1
-          fi
-
-      - name: Run Google Search Test
-        id: run_tests
-        run: |
-          if python Google.py > test_results.log; then
-            echo "Tests executed successfully!"
-          else
-            echo "There were errors in the tests. Check the logs below:"
-            cat test_results.log
-            exit 1
-          fi
-
-      - name: Show test results
-        run: |
-          if [[ -f test_results.log ]]; then
-            cat test_results.log
-          else
-            echo "Test results log not found."
-            exit 1
-          fi
-      
-      - name: Confirm test execution
-        if: ${{ steps.run_tests.outcome == 'success' }}
-        run: |
-          echo "All tests executed successfully!"
-          cat test_results.log
-      
-      - name: Handle test failure
-        if: ${{ steps.run_tests.outcome != 'success' }}
-        run: |
-          echo "Test failures detected. Review the logs."
-          cat test_results.log
-
-      - name: Deploy application
-        run: |
-          if npm run deploy; then
-            echo "Application deployed successfully!"
-          else
-            echo "Failed to deploy application. Exiting..."
-            exit 1
-          fi
+    - name: Run tests
+      run: |
+        python -m unittest test_example.py  # Run your test script directly
