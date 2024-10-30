@@ -29,65 +29,74 @@ jobs:
       - name: Install dependencies
         run: |
           if npm install; then
-             "Dependencies installed successfully!"
+            echo "Dependencies installed successfully!"
           else
-             "Failed to install dependencies. Exiting..."
-          
+            echo "Failed to install dependencies. Exiting..."
+            exit 1
+          fi
 
       - name: Install Mocha Globally (if Mocha is not in `package.json`)
         run: |
           if npm install -g mocha; then
-             "Mocha installed successfully!"
+            echo "Mocha installed successfully!"
           else
-             "Failed to install Mocha. Exiting..."
-          
+            echo "Failed to install Mocha. Exiting..."
+            exit 1
+          fi
+
       - name: Run Mocha Tests
         run: |
           if mocha; then
-             "Mocha tests passed successfully!"
+            echo "Mocha tests passed successfully!"
           else
-             "Mocha test execution failed. Exiting..."
-           
+            echo "Mocha test execution failed. Exiting..."
+            exit 1
+          fi
 
       - name: Build npm Packages
         run: |
           if npm run build; then
-             "npm packages built successfully!"
+            echo "npm packages built successfully!"
           else
-             "Failed to build npm packages. Exiting..."
-           
+            echo "Failed to build npm packages. Exiting..."
+            exit 1
+          fi
 
       - name: Run npm Tests
         run: |
           if npm test; then
-             "npm tests passed successfully!"
+            echo "npm tests passed successfully!"
           else
-             "npm tests failed. Exiting..."
-         
+            echo "npm tests failed. Exiting..."
+            exit 1
+          fi
 
       - name: Check Docker Version
         run: |
           if docker --version; then
-             "Docker is installed."
+            echo "Docker is installed."
           else
-             "Docker is not installed or the version is incompatible. Exiting..."
-        
+            echo "Docker is not installed or the version is incompatible. Exiting..."
+            exit 1
+          fi
 
       - name: Build Docker Image
         run: |
           if docker build -t my-selenium-app:latest .; then
-             "Docker image built successfully!"
+            echo "Docker image built successfully!"
           else
-             "Docker image build failed. Exiting..."
-         
+            echo "Docker image build failed. Exiting..."
+            exit 1
+          fi
 
       - name: Save Docker Image
         run: |
           if docker image save my-selenium-app:latest | xz -z -e -7 -T0 > image.xz; then
-             "Docker image saved successfully!"
+            echo "Docker image saved successfully!"
           else
-             "Failed to save Docker image. Exiting..."
-        
+            echo "Failed to save Docker image. Exiting..."
+            exit 1
+          fi
 
       - name: Create Release
         id: create_release
@@ -98,66 +107,73 @@ jobs:
           draft: false
           prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically available in Actions
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically available 
 
       - name: Upload Release Asset
         run: |
           if [[ -n "${{ steps.create_release.outputs.upload_url }}" ]]; then
-             "Uploading release asset..."
+            echo "Uploading release asset..."
             actions/upload-release-asset@v1
           else
-             "Upload URL not found. Exiting..."
-        
+            echo "Upload URL not found. Exiting..."
+            exit 1
+          fi
 
       - name: Install Selenium
         run: |
           if pip install selenium; then
-             "Selenium installed successfully!"
+            echo "Selenium installed successfully!"
           else
-             "Failed to install Selenium. Exiting..."
-          
+            echo "Failed to install Selenium. Exiting..."
+            exit 1
+          fi
 
       - name: Install Python dependencies
         run: |
           if python -m pip install --upgrade pip && pip install selenium webdriver-manager; then
-             "Python dependencies installed successfully!"
+            echo "Python dependencies installed successfully!"
           else
-             "Failed to install Python dependencies. Exiting..."
-       
+            echo "Failed to install Python dependencies. Exiting..."
+            exit 1
+          fi
 
       - name: Run Google Search Test
         id: run_tests
         run: |
           if python Google.py > test_results.log; then
-             "Tests executed successfully!"
+            echo "Tests executed successfully!"
           else
-             "There were errors in the tests. Check the logs below:"
+            echo "There were errors in the tests. Check the logs below:"
             cat test_results.log
-        
+            exit 1
+          fi
 
       - name: Show test results
         run: |
           if [[ -f test_results.log ]]; then
             cat test_results.log
           else
-             "Test results log not found."
-        
+            echo "Test results log not found."
+            exit 1
+          fi
       
       - name: Confirm test execution
         if: ${{ steps.run_tests.outcome == 'success' }}
         run: |
-           "All tests executed successfully!"
-            cat test_results.log
+          echo "All tests executed successfully!"
+          cat test_results.log
       
       - name: Handle test failure
         if: ${{ steps.run_tests.outcome != 'success' }}
         run: |
-          "Test failures detected. Review the logs."
+          echo "Test failures detected. Review the logs."
           cat test_results.log
 
       - name: Deploy application
         run: |
           if npm run deploy; then
-          "Application deployed successfully!"
-          else Failed to deploy application. Exiting..."
-         
+            echo "Application deployed successfully!"
+          else
+            echo "Failed to deploy application. Exiting..."
+            exit 1
+          fi
