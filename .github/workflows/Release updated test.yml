@@ -33,35 +33,41 @@ jobs:
         run: npm install -g mocha
 
       - name: Run Mocha Tests
+        id: mocha_tests
         run: |
-          if ! mocha; then
-            echo "Mocha test execution failed. Exiting..."
-            exit 1
-          fi
+          mocha || exit 1
+
+      # Else condition for Mocha tests
+      - name: Mocha Tests Else Condition
+        if: ${{ failure() && steps.mocha_tests.outcome != 'success' }}
+        run: exit 1
 
       - name: Build npm Packages
         run: npm run build
 
       - name: Run npm Tests
+        id: npm_tests
         run: |
-          if ! npm test; then
-            echo "npm tests failed. Exiting..."
-            exit 1
-          fi
+          npm test || exit 1
+
+      # Else condition for npm tests
+      - name: Npm Tests Else Condition
+        if: ${{ failure() && steps.npm_tests.outcome != 'success' }}
+        run: exit 1
 
       - name: Check Docker Version
         run: |
-          if ! docker --version; then
-            echo "Docker is not installed or the version is incompatible. Exiting..."
-            exit 1
-          fi
+          docker --version || exit 1
 
       - name: Build Docker Image
+        id: docker_build
         run: |
-          if ! docker build -t my-selenium-app:latest .; then
-            echo "Docker image build failed. Exiting..."
-            exit 1
-          fi
+          docker build -t my-selenium-app:latest . || exit 1
+
+      # Else condition for Docker image build
+      - name: Docker Build Else Condition
+        if: ${{ failure() && steps.docker_build.outcome != 'success' }}
+        run: exit 1
 
       - name: Save Docker Image
         run: docker image save my-selenium-app:latest | xz -z -e -7 -T0 > image.xz
@@ -70,18 +76,18 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: v${{ github.run_id }}  # Use the run id as the version tag
+          tag_name: v${{ github.run_id }}
           release_name: Release ${{ github.run_id }}
           draft: false
           prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically available in Actions
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: image.xz  # Path to the compressed Docker image
+          asset_path: image.xz
           asset_name: image.xz
           asset_content_type: application/x-xz
         env:
@@ -96,26 +102,36 @@ jobs:
           pip install selenium webdriver-manager
 
       - name: Run Google Search Test
-        id: run_tests
+        id: google_search_test
         run: |
-           python Google.py > test_results.log || exit 0
-           cat test_results.log
-      
+           python Google.py > test_results.log || exit 1
+
+      # Show test results regardless of outcome
       - name: Show test results
         run: cat test_results.log
-      
-      - name: Confirm test execution
-        if: ${{ steps.run_tests.outcome == 'success' }}
-        run: cat test_results.log
-      
-      - name: Handle test failure
-        if: ${{ steps.run_tests.outcome != 'success' }}
-        run: cat test_results.log
+
+      # Else condition for Google Search test
+      - name: Google Search Test Else Condition
+        if: ${{ failure() && steps.google_search_test.outcome != 'success' }}
+        run: exit 1
 
       - name: Deploy application
         id: deploy
         run: npm run deploy
         env:
-         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      
+      # Conditional step for successful deployment
+      - name: Deployment Success
+        if: ${{ success() && steps.deploy.outcome == 'success' }}
+        run: echo "Deployment completed successfully."
+
+      # Conditional step for deployment failure
+      - name: Deployment Failure
+        if: ${{ failure() || steps.deploy.outcome != 'success' }}
+        run: exit 1
+
+      # Catch any unexpected outcomes
+      - name: Unexpected Outcome
+        if: ${{ steps.deploy.outcome == 'skipped' || (!success() && !failure()) }}
+        run: exit 1
