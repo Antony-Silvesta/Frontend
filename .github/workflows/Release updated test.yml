@@ -118,12 +118,4 @@ jobs:
         env:
          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Conditional step to check if deployment was successful
-      - name: Deployment Success
-        if: ${{ success() && steps.deploy.outcome == 'success' }}
-        run: echo "Deployment completed successfully."
-
-      # Conditional step to check if deployment failed
-      - name: Deployment Failure
-        if: ${{ failure() || steps.deploy.outcome != 'success' }}
-        run: echo "Deployment failed."
+      
