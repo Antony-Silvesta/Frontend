@@ -32,8 +32,8 @@ jobs:
       - name: Install Node.js dependencies
         run: npm install  # Install all project dependencies
 
-      - name: Make Mocha executable
-        run: chmod +x node_modules/.bin/mocha
+      - name: Install Mocha Globally (if Mocha is not in `package.json`)
+        run: npm install -g mocha
 
       - name: Run Mocha tests
         run: |
@@ -44,22 +44,22 @@ jobs:
             echo "No Mocha tests found; skipping this step."
           fi
 
-      - name: Build frontend
+      - name: Build npm Packages
         run: |
           if [ -f "package.json" ]; then  # Check if package.json file exists
-            echo "Building frontend application..."
+            echo "Building npm packages application..."
             npm run build
           else
-            echo "No frontend build configuration found; skipping build."
+            echo "No npm packages build configuration found; skipping build."
           fi
 
-      - name: Test frontend
+      - name: Run npm Tests
         run: |
-          if [ -f "test/frontend.test.js" ]; then  # Check if frontend test file exists
-            echo "Running frontend tests..."
+          if [ -f "Run/frontend.test.js" ]; then  # Check if npm test file exists
+            echo "Running npm tests..."
             npm test
           else
-            echo "No frontend tests found; skipping frontend tests."
+            echo "No Run npm tests found; skipping Run npm tests."
           fi
 
       - name: Check Docker version
@@ -120,23 +120,22 @@ jobs:
 
       - name: Show test results
         run: |
-          echo "Selenium tests executed: Google.py"
+          cat test_results.log
   
 
       - name: Confirm test execution
         if: ${{ steps.run_tests.outcome == 'success' }}
-        run: echo "Selenium tests executed successfully."
+        run: cat test_results.log
 
       - name: Handle test failure
         if: ${{ steps.run_tests.outcome != 'success' }}
         run: |
-          echo "Selenium tests failed. Please check the logs for details."
+          cat test_results.log
 
       - name: Deploy frontend
         run: |
           if [ "${{ github.event_name }}" == "push" ]; then
             echo "Deploying frontend application..."
             npm run deploy  # Deploy command for the frontend
-          else
-            echo "Not deploying frontend as the workflow is not triggered by a push event."
+          
           fi
