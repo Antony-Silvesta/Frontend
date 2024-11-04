@@ -55,15 +55,13 @@ jobs:
 
       - name: Run npm Tests
         run: |
-          if [ -f "" ]; then  # Check if npm test file exists
+          if [ -f "Run/npm.test.js" ]; then  # Check if npm test file exists
             echo "Running npm tests..."
             npm test
           else
             echo "No Run npm tests found; skipping Run npm tests."
           fi
 
-      - name: Check Docker version
-        run: docker --version
 
       - name: Build Docker image
         run: |
