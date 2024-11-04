@@ -110,7 +110,7 @@ jobs:
 
 
       - name: View test results
-       run: cat test_results.log || echo "No log file created."
+        run: cat test_results.log 
   
 
       - name: Confirm test execution
