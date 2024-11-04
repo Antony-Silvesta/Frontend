@@ -109,8 +109,8 @@ jobs:
         run: python Google.py
 
 
-      - name: Show test results
-        run: cat test_results.log
+      - name: View test results
+       run: cat test_results.log || echo "No log file created."
   
 
       - name: Confirm test execution
