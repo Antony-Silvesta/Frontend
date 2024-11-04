@@ -67,7 +67,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          if [ -f "Dockerfile" ]; then  # Check if Dockerfile exists
+          if [ -f "" ]; then  # Check if Dockerfile exists
             echo "Building Docker image..."
             docker build -t my-selenium-app:latest .
           else
