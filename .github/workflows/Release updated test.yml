@@ -67,7 +67,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          if [ -f "" ]; then  # Check if Dockerfile exists
+          if [ -f "Dockerfile" ]; then  # Check if Dockerfile exists
             echo "Building Docker image..."
             docker build -t my-selenium-app:latest .
           else
@@ -106,7 +106,7 @@ jobs:
       - name: Run Google Search Test
         id: run_tests
         run: |
-          if [ -f "" ]; then  # Check if Google.py test file exists
+          if [ -f "Google.py" ]; then  # Check if Google.py test file exists
             echo "Running Google Search test..."
             python Google.py > test_results.log || exit 0
             cat test_results.log
