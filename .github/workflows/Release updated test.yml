@@ -55,7 +55,7 @@ jobs:
 
       - name: Run npm Tests
         run: |
-          if [ -f "Run/frontend.test.js" ]; then  # Check if npm test file exists
+          if [ -f "Run/npm.test.js" ]; then  # Check if npm test file exists
             echo "Running npm tests..."
             npm test
           else
@@ -97,7 +97,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: image.xz  # Path to the compressed Docker images
+          asset_path: image.xz  # Path to the compressed Docker image
           asset_name: image.xz
           asset_content_type: application/x-xz
         env:
