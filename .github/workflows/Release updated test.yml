@@ -36,13 +36,9 @@ jobs:
         run: npm install -g mocha
 
       - name: Run Mocha tests
-        run: |
-          if [ -f "test/mocha.test.js" ]; then  # Check if Mocha test file exists
-            echo "Running Mocha tests..."
-            npm test  # Runs Mocha test script
-          else
-            echo "No Mocha tests found; skipping this step."
-          fi
+        run: npm test  # Assuming your test script runs Mocha
+
+      
 
       - name: Build npm Packages
         run: |
@@ -54,13 +50,8 @@ jobs:
           fi
 
       - name: Run npm Tests
-        run: |
-          if [ -f "Run/npm.test.js" ]; then  # Check if npm test file exists
-            echo "Running npm tests..."
-            npm test
-          else
-            echo "No Run npm tests found; skipping Run npm tests."
-          fi
+        run: npm test  
+        
 
       - name: Check Docker version
         run: docker --version
@@ -102,13 +93,24 @@ jobs:
           asset_content_type: application/x-xz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+            python-version: '3.x'  # Specify your Python version (e.g., 3.8, 3.9, etc.)
+    
+      - name: Install dependencies
+        run: |
+            pip install selenium webdriver-manager
+    
+      - name: Check installed packages
+        run: pip list  # This will confirm if selenium is installed
+    
       - name: Run Selenium test
         run: python Google.py
 
+
       - name: Show test results
-        run: |
-          cat test_results.log
+        run: cat test_results.log
   
 
       - name: Confirm test execution
