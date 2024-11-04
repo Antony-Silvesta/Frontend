@@ -128,8 +128,13 @@ jobs:
         run: |
           cat test_results.log
 
-      - name: Deploy frontend
+      - name: Check if deployment is necessary
+        id: check_deploy
         run: |
-          echo "Deploying frontend application..."
-          npm run deploy  # Deploy command for the frontend
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "deploy=true" >> $GITHUB_ENV
+          else
+            echo "deploy=false" >> $GITHUB_ENV
+          fi
 
+     
