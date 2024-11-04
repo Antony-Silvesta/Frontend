@@ -37,7 +37,7 @@ jobs:
 
       - name: Run Mocha tests
         run: |
-          if [ -f "test/mocha.test.js" ]; then  # Check if Mocha test file exists
+          if [ -f "test/mocha.test." ]; then # Check if Mocha test file exists
             echo "Running Mocha tests..."
             npm test  # Runs Mocha test script
           else
@@ -128,13 +128,8 @@ jobs:
         run: |
           cat test_results.log
 
-      - name: Check if deployment is necessary
-        id: check_deploy
-        run: |
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "deploy=true" >> $GITHUB_ENV
-          else
-            echo "deploy=false" >> $GITHUB_ENV
-          fi
-
-     
+      - name: Deploy application
+        id: deploy
+        run: npm run deploy
+        env:
+         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
