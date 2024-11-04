@@ -23,7 +23,7 @@ try:
     search_box.send_keys("Selenium Python")
     search_box.submit()
 
-    # Additional test steps can be added here
+    # Additional test steps 
     print("Google Search Test Passed.")
 finally:
     # Close the browser

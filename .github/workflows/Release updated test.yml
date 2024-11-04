@@ -76,12 +76,8 @@ jobs:
 
       - name: Save Docker image
         run: |
-          if docker image inspect my-selenium-app:latest > /dev/null 2>&1; then
-            docker image save my-selenium-app:latest | xz -z -e -7 -T0 > image.xz
-            echo "Docker image saved as image.xz"
-          else
-            echo "Docker image not found; skipping save."
-          fi
+          docker image save my-selenium-app:latest | xz -z -e -7 -T0 > image.xz
+          echo "Docker image saved as image.xz"
 
       - name: List Files
         run: ls -la  # Verify that image.xz was created
@@ -134,8 +130,6 @@ jobs:
 
       - name: Deploy frontend
         run: |
-          if [ "${{ github.event_name }}" == "push" ]; then
-            echo "Deploying frontend application..."
-            npm run deploy  # Deploy command for the frontend
-          
-          fi
+          echo "Deploying frontend application..."
+          npm run deploy  # Deploy command for the frontend
+
