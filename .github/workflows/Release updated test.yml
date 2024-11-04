@@ -62,12 +62,14 @@ jobs:
             echo "No Run npm tests found; skipping Run npm tests."
           fi
 
+      - name: Check Docker version
+        run: docker --version
 
       - name: Build Docker image
         run: |
           if [ -f "Dockerfile" ]; then  # Check if Dockerfile exists
             echo "Building Docker image..."
-            docker build -t my-selenium-app:latest .
+            docker build -t  .
           else
             echo "No Dockerfile found; skipping Docker build."
           fi
