@@ -1,29 +1,139 @@
-name: Run Selenium Tests
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    services:
+      selenium:
+        image: selenium/standalone-chrome:latest  # Using Selenium Chrome standalone service
+        options: --shm-size 2g  # Increase shared memory size for Chrome
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'  # Specify your Python version (e.g., 3.8, 3.9, etc.)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'  # Specify the Node.js version
 
-    - name: Install dependencies
-      run: |
-        pip install selenium webdriver-manager
+      - name: Install Node.js dependencies
+        run: npm install  # Install all project dependencies
 
-    - name: Check installed packages
-      run: pip list  # This will confirm if selenium is installed
+      - name: Install Mocha Globally (if Mocha is not in `package.json`)
+        run: npm install -g mocha
 
-    - name: Run Selenium test
-      run: python Google.py
+      - name: Run Mocha tests
+        run: |
+          if [ -f "test/mocha.test.js" ]; then  # Check if Mocha test file exists
+            echo "Running Mocha tests..."
+            npm test  # Runs Mocha test script
+          else
+            echo "No Mocha tests found; skipping this step."
+          fi
+
+      - name: Build npm Packages
+        run: |
+          if [ -f "package.json" ]; then  # Check if package.json file exists
+            echo "Building npm packages application..."
+            npm run build
+          else
+            echo "No npm packages build configuration found; skipping build."
+          fi
+
+      - name: Run npm Tests
+        run: |
+          if [ -f "Run/npm.test.js" ]; then  # Check if npm test file exists
+            echo "Running npm tests..."
+            npm test
+          else
+            echo "No Run npm tests found; skipping Run npm tests."
+          fi
+
+      - name: Check Docker version
+        run: docker --version
+
+      - name: Build Docker image
+        run: |
+          if [ -f "Dockerfile" ]; then  # Check if Dockerfile exists
+            echo "Building Docker image..."
+            docker build -t my-selenium-app:latest .
+          else
+            echo "No Dockerfile found; skipping Docker build."
+          fi
+
+      - name: Save Docker image
+        run: |
+          docker image save my-selenium-app:latest | xz -z -e -7 -T0 > image.xz
+          echo "Docker image saved as image.xz"
+
+      - name: List Files
+        run: ls -la  # Verify that image.xz was created
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v${{ github.run_number }}  # Use the run number as the version tag
+          release_name: Release ${{ github.run_number }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: image.xz  # Path to the compressed Docker images
+          asset_name: image.xz
+          asset_content_type: application/x-xz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+            python-version: '3.x'  # Specify your Python version (e.g., 3.8, 3.9, etc.)
+    
+      - name: Install dependencies
+        run: |
+            pip install selenium webdriver-manager
+    
+      - name: Check installed packages
+        run: pip list  # This will confirm if selenium is installed
+    
+      - name: Run Selenium test
+        run: python Google.py
+
+
+      - name: Show test results
+        run: |
+          cat test_results.log
+  
+
+      - name: Confirm test execution
+        if: ${{ steps.run_tests.outcome == 'success' }}
+        run: cat test_results.log
+
+      - name: Handle test failure
+        if: ${{ steps.run_tests.outcome != 'success' }}
+        run: |
+          cat test_results.log
+
+      - name: Deploy application
+        id: deploy
+        run: npm run deploy
+        env:
+         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
