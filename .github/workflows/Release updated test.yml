@@ -37,7 +37,7 @@ jobs:
 
       - name: Run Mocha tests
         run: |
-          if [ -f "test/mocha.test." ]; then # Check if Mocha test file exists
+          if [ -f "test/mocha.test.js" ]; then  # Check if Mocha test file exists
             echo "Running Mocha tests..."
             npm test  # Runs Mocha test script
           else
@@ -55,7 +55,7 @@ jobs:
 
       - name: Run npm Tests
         run: |
-          if [ -f "Run/frontend.test.js" ]; then  # Check if npm test file exists
+          if [ -f "" ]; then  # Check if npm test file exists
             echo "Running npm tests..."
             npm test
           else
