@@ -130,9 +130,12 @@ jobs:
 
       - name: Check if tests passed
         run: |
-         grep -q "FAILED" test_results.log && { echo "Some tests failed."; exit 1; }
-         echo "All tests passed."
-
+         if grep -q "FAILED" test_results.log; then
+          echo "Some tests failed."
+          exit 1  # Ensure the workflow fails if any test fails
+         else
+          echo "All tests passed."
+         fi
 
       - name: Deploy application
         id: deploy
