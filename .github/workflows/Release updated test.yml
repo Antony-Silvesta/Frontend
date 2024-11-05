@@ -35,8 +35,13 @@ jobs:
       - name: Install Mocha Globally (if Mocha is not in `package.json`)
         run: npm install -g mocha
 
+
+      - name: List test directory contents
+        run: ls -la test  # Check the contents of the test directory
+
       - name: Run Mocha tests
         run: |
+          echo "Checking for Mocha test file..."
           if [ -f "test/mocha.test.js" ]; then  # Check if Mocha test file exists
             echo "Running Mocha tests..."
             npm test  # Runs Mocha test script
