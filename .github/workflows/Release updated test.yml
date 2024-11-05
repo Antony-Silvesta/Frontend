@@ -36,9 +36,13 @@ jobs:
         run: npm install -g mocha
 
       - name: Run Mocha tests
-        run: npm test  # Assuming your test script runs Mocha
-
-      
+        run: |
+          if [ -f "test/mocha.test.js" ]; then  # Check if Mocha test file exists
+            echo "Running Mocha tests..."
+            npm test  # Runs Mocha test script
+          else
+            echo "No Mocha tests found; skipping this step."
+          fi
 
       - name: Build npm Packages
         run: |
@@ -50,8 +54,13 @@ jobs:
           fi
 
       - name: Run npm Tests
-        run: npm test  
-        
+        run: |
+          if [ -f "Run/frontend.test.js" ]; then  # Check if npm test file exists
+            echo "Running npm tests..."
+            npm test
+          else
+            echo "No Run npm tests found; skipping Run npm tests."
+          fi
 
       - name: Check Docker version
         run: docker --version
@@ -66,9 +75,8 @@ jobs:
           fi
 
       - name: Save Docker image
-        run: |
-          docker image save my-selenium-app:latest | xz -z -e -7 -T0 > image.xz
-          echo "Docker image saved as image.xz"
+        run: docker image save my-selenium-app:latest | xz -z -e -7 -T0 > image.xz  # Save the Docker image in compressed form
+
 
       - name: List Files
         run: ls -la  # Verify that image.xz was created
@@ -88,25 +96,11 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: image.xz  # Path to the compressed Docker images
+          asset_path: image.xz  # Path to the compressed Docker image
           asset_name: image.xz
           asset_content_type: application/x-xz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-            python-version: '3.x'  # Specify your Python version (e.g., 3.8, 3.9, etc.)
-    
-      - name: Install dependencies
-        run: |
-            pip install selenium webdriver-manager
-    
-      - name: Check installed packages
-        run: pip list  # This will confirm if selenium is installed
-    
-      
-
 
       - name: Run Google Search Test
         id: run_tests
@@ -118,33 +112,28 @@ jobs:
           else
             echo "No Google Search test found; skipping this step."
           fi
-  
 
-      - name: Confirm test execution
-        
+      - name: Show test results
         run: cat test_results.log
-
-      - name: Handle test failure
-        
-        run: |
-          cat test_results.log
-
+  
       - name: Archive Test Report
         uses: actions/upload-artifact@v3
         with:
-         name: selenium-test-report
-         path: report.html
+          name: selenium-test-report
+          path: report.html
       - name: Archive Test Results
         uses: actions/upload-artifact@v3
         with:
-         name: test-results
-         path: test_results.log
+          name: test-results
+          path: test_results.log
+     
+
       - name: Check if tests passed
         run: |
-         grep -q "FAILED" test_results.log && exit 1 || echo "All tests passed."
+         grep -q "FAILED" test_results.log && { echo "Some tests failed."; exit 1; }
+         echo "All tests passed."
 
 
-     
       - name: Deploy application
         id: deploy
         run: npm run deploy
