@@ -108,22 +108,10 @@ jobs:
       - name: Run Selenium test
         run: python Google.py
 
-      
-
-      - name: Confirm test execution
-        if: ${{ steps.run_tests.outcome == 'success' }}
+      - name: Show test results log
         run: cat test_results.log
-
-      - name: Handle test failure
-        if: ${{ steps.run_tests.outcome != 'success' }}
-        run: |
-          cat test_results.log
-
-     
 
      
       - name: Deploy application
-        id: deploy
         run: npm run deploy
-        env:
-         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        
