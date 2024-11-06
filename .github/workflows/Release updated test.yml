@@ -109,15 +109,16 @@ jobs:
         run: python Google.py
 
       - name: Show test results
-        run: cat test_results.log
+        run: python Google.py > test_results.log
+
       
       - name: Confirm test execution
         
-        run: cat test_results.log
+        run: python Google.py > test_results.log
       
       - name: Handle test failure
         
-        run: cat test_results.log
+        run: python Google.py > test_results.log
 
 
       - name: Archive Test Report
