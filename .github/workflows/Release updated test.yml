@@ -103,7 +103,7 @@ jobs:
             pip install selenium webdriver-manager
     
       - name: Check installed packages
-        run: pip list  # This will confirm if selenium is installed
+        run: pip list  # This will confirm 
     
       - name: Run Selenium test
         run: python Google.py
